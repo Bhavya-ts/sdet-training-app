@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-
 test("create profile form", async ({ page }) => {
   await page.goto("http://localhost:3000/form");
 
@@ -134,4 +133,97 @@ test("create profile form", async ({ page }) => {
   await expect(usernameLabel).toHaveValue("One Piece");
 
   await expect(usernameContainerMinCharErrorLocator).not.toBeVisible();
+
+
+  //Day 2 Task 
+
+  const notifyField = formLocator.locator("div").filter({
+    hasText: "notify me about...",
+  });
+  await expect(notifyField).toBeVisible();
+  
+
+  const roleGroup = notifyField.getByRole('radiogroup');
+
+  //The process by labels 
+  const roleLabels = roleGroup.locator('label');
+
+  expect(roleLabels).toHaveCount(3);
+
+  const items = ['All new messages' , 'Direct messages and mentions','Nothing'];
+
+  //checking the text content of all the labels 
+  for(const label of await roleLabels.all()){
+    const labelText = await label.textContent();
+
+    expect(items).toContain(labelText);
+  }
+
+  //By default none is checked 
+  for (let i = 0; i < 3; i++) {
+    expect(roleLabels.nth(i)).not.toBeChecked();
+    
+  }
+  //If i check any one then other two should be unckecked 
+  for(let i = 0 ; i<3 ; i++){
+    await roleLabels.nth(i).click();
+    expect(roleLabels.nth(i)).toBeChecked();
+
+    for (let j = 0; j <3; j++) {
+      if(j !== i){
+        expect(roleLabels.nth(j)).not.toBeChecked();
+      }
+    };
+  }
+
+  //the process by Button 
+  const roleButtons = roleGroup.locator('button').and(page.getByRole('radio'));
+  expect(roleButtons).toHaveCount(3);
+  for(let i = 0 ; i<3 ; i++){
+    await roleButtons.nth(i).click();
+    expect(roleButtons.nth(i)).toBeChecked();
+
+    for (let j = 0; j <3; j++) {
+      if(j !== i){
+        expect(roleButtons.nth(j)).not.toBeChecked();
+      }
+    };
+  }
+
+
+  //Next Div of dropedown menu 
+
+  const countryField = formLocator.locator("div").filter({
+    hasText: "Country",
+  });
+  await expect(countryField).toBeVisible();
+
+  const selectionBtn = countryField.locator('button');
+  const spanText = selectionBtn.locator('span');
+  await expect(spanText).toHaveText('Select a verified email to display');
+
+  const selectField = countryField.locator('select');
+  await expect(selectField).toBeVisible();
+
+  //check at start options should not be visible 
+  const optionListField = selectField.locator('option');
+  await expect(optionListField).toHaveCount(3);
+  
+
+  selectField.selectOption({label:'India'});
+  await expect(spanText).toHaveText('India');
+  await expect(selectField).toHaveValue(await selectField.inputValue()) // returns the value of select after the input of otion 
+
+  selectField.selectOption({label:'USA'});
+  await expect(spanText).toHaveText('USA');
+  await expect(selectField).toHaveValue(await selectField.inputValue())
+
+  selectField.selectOption({label:'UK'});
+  await expect(spanText).toHaveText('UK');
+  await expect(selectField).toHaveValue(await selectField.inputValue()) 
+
+  
+  
+
+
 });
